@@ -24,7 +24,7 @@ disp(['** Hello Rafael, I am processing samples ', wt_sample, ' and ', mut_sampl
 % look up if the mutant is a deletion or inversion and find deletion coordinates
 table=readtable(tablename); % imports the database table with all 5C samples
 disp(['Importing sample information from table ', tablename])
-table(:,'Var11') = []; % get rid of 11th column (useless)
+%table(:,'Var11') = []; % get rid of 11th column (useless)
 names = table.Sample; % this is the sample names
 mut_info = table{strcmp(mut_sample, names), :}; % finds sample in the table and extracts the corresp. row with info
 if strcmp(mut_info(3),'Deletion')
@@ -88,22 +88,40 @@ disp('Matrices imported and normalized by the number of reads x 10million')
 
 %% PRE-FILTERING:
 % sum or rows:
-row_sum = sum(wt_data,2);
+row_sum_wt = sum(wt_data,2);
+row_sum_mut = sum(mut_data,2);
+nan_wt=find(row_sum_wt==0);
+nan_mut=find(row_sum_mut==0);
 % assign rows where sum of counts is striclty 0 to NaN (non-working primers)
-wt_data(row_sum==0,:)=NaN;
-mut_data(row_sum==0,:)=NaN;
-wt_data(:,row_sum==0)=NaN;
-mut_data(:,row_sum==0)=NaN;
+wt_data(row_sum_wt==0,:)=NaN;
+mut_data(row_sum_mut==0,:)=NaN;
+wt_data(:,row_sum_wt==0)=NaN;
+mut_data(:,row_sum_mut==0)=NaN;
 disp('Assigning masked bins to Nan')
 
 %% plot WT and mutant matrices 
 figure('Name', 'WT')
     imagesc(wt_data)
+    %find row and columns with NaN
+    y1=get(gca,'ylim');
+    hold on ; 
+    p=plot([nan_wt nan_wt], y1,'-');
+    hold on ; 
+    p1=plot(y1,[nan_wt nan_wt],'-');
+    grey=[0.8 0.8 0.8];
+    set ([p p1], 'Color', grey);
     colorbar
     set(gca, 'CLim', [0, 200])
 
 figure('Name', 'mut')
     imagesc(mut_data)
+    y1=get(gca,'ylim');
+    hold on ; 
+    p=plot([nan_mut nan_mut], y1,'-');
+    hold on ; 
+    p1=plot(y1,[nan_mut nan_mut],'-');
+    grey=[0.8 0.8 0.8];
+    set ([p p1], 'Color', grey) ;
     colorbar
     set(gca, 'CLim', [0, 200])
 
@@ -161,10 +179,24 @@ switch ZEROS
         end
         figure('Name','Zscore WT with zeros')
             imagesc(Zscore_wt)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_wt nan_wt], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_wt nan_wt],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut with zeros')
             imagesc(Zscore_mut)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_mut nan_mut], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_mut nan_mut],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
     
@@ -187,10 +219,24 @@ switch ZEROS
         end
         figure('Name','Zscore WT without zeros')
             imagesc(Zscore_wt)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_wt nan_wt], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_wt nan_wt],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;           
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut without zeros')
             imagesc(Zscore_mut)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_mut nan_mut], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_mut nan_mut],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
 end
@@ -212,7 +258,7 @@ subplot(2,1,2)
     axis([-100 350 0 6e5])
     legend 'mut'
 
-% filter out singletons:
+%% filter out singletons:
 disp('Filtering out Zscore sigletons outside .999 quantile')
 threshold_wt = quantile(nonzeros(Zscore_wt(:)), 0.999);
 threshold_mut = quantile(nonzeros(Zscore_mut(:)), 0.999);
@@ -246,6 +292,7 @@ q = quantile(row_sum_filtered_mut(row_sum_filtered_mut>0),[0.25 0.75]);
 l_threshold=q(1)-(q(2)-q(1))*1.5;
 u_threshold=q(2)+(q(2)-q(1))*1.5;
 row_filter=(row_sum_filtered_mut>u_threshold | row_sum_filtered_mut<l_threshold);
+nan_mut_filtered=unique([nan_mut;find(row_filter==1)]);
 mut_data_filtered(row_filter==1,:)=NaN;
 mut_data_filtered(:,row_filter==1)=NaN;
 
@@ -253,6 +300,7 @@ q = quantile(row_sum_filtered_wt(row_sum_filtered_wt>0),[0.25 0.75]);
 l_threshold=q(1)-(q(2)-q(1))*1.5;
 u_threshold=q(2)+(q(2)-q(1))*1.5;
 row_filter=(row_sum_filtered_wt>u_threshold | row_sum_filtered_wt<l_threshold);
+nan_wt_filtered=unique([nan_wt;find(row_filter==1)]);
 wt_data_filtered(row_filter==1,:)=NaN;
 wt_data_filtered(:,row_filter==1)=NaN;
 
@@ -284,10 +332,24 @@ switch ZEROS
         end
         figure('Name','Zscore WT with zeros after filters')
             imagesc(Zscore_wt)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_wt_filtered nan_wt_filtered], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_wt_filtered nan_wt_filtered],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;  
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut with zeros after filters')
             imagesc(Zscore_mut)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_mut_filtered nan_mut_filtered], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_mut_filtered nan_mut_filtered],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
     
@@ -309,10 +371,24 @@ switch ZEROS
         end
         figure('Name','Zscore WT without zeros after filters')
             imagesc(Zscore_wt)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_wt_filtered nan_wt_filtered], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_wt_filtered nan_wt_filtered],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;     
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut without zeros after filters')
             imagesc(Zscore_mut)
+            y1=get(gca,'ylim');
+            hold on ; 
+            p=plot([nan_mut_filtered nan_mut_filtered], y1,'-');
+            hold on ; 
+            p1=plot(y1,[nan_mut_filtered nan_mut_filtered],'-');
+            grey=[0.8 0.8 0.8];
+            set ([p p1], 'Color', grey) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
 end
@@ -338,8 +414,16 @@ end
 
 %% calculation of Zscore differences
 Zscore_diff = Zscore_mut - Zscore_wt;
+nan_wt_mut_filter=unique([nan_wt_filtered; nan_mut_filtered]);
 figure('Name','Zscore difference (Mut - WT)')
     imagesc(Zscore_diff)
+    y1=get(gca,'ylim');
+    hold on ; 
+    p=plot([nan_wt_mut_filter nan_wt_mut_filter], y1,'-');
+    hold on ; 
+    p1=plot(y1,[nan_wt_mut_filter nan_wt_mut_filter],'-');
+    grey=[0.8 0.8 0.8];
+    set ([p p1], 'Color', grey) ;     
     colorbar
     set(gca, 'CLim', [-2, 2])
 % load WhiteBlueRed colormap:
@@ -363,7 +447,6 @@ set(5,'Colormap',map3.BlueWhiteRed)
 figure('Name', 'log2 Ratio of filtered mut/WT maps')
     imagesc(log2(mut_data_filtered./wt_data_filtered))
     colorbar
-
 set([3 4 6 7 8 9],'Colormap',map3.BlueWhiteRed)
 set(gca, 'CLim', [-2, 2])
 
