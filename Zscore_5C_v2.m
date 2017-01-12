@@ -11,11 +11,12 @@ close all
 
 
 %% options:
-distance = 3; % distance for correlation between neighbors
+distance = 2; % distance for correlation between neighbors
 binsize = 5000; % genomic size of the bin
 startcoord = 99011149; % start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
 ZEROS = 'true'; % if 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
 tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples
+color=[0.8 0.8 0.8]; %color for NaNs [0.8 0.8 0.8]=grey
 %% 1. data input
 % samples:
 wt_sample = 'B20_E14-2';
@@ -111,14 +112,14 @@ end
 %correlation matrix
 correlation = [zeros(size(wt_data,1)-distance-10,1) zeros(size(wt_data,1)-distance-10,1)];
 for i=1:(size(wt_data,1)-distance-10)
-    x=wt_data(dist_wt==i);
+    x=wt_data(dist_wt==i)*i;
     x=x(1:length(x)-distance);
-    y=wt_data(dist_wt==i+distance);
+    y=wt_data(dist_wt==i+distance)*(i+distance);
     nan=unique([find(isnan(x)) ;find(isnan(y))]);
     x(nan)=[];
     y(nan)=[];
     correlation(i,1)=i;
-    correlation(i,2)=corr(x,y,'Type','Spearman');
+    correlation(i,2)=corr(log2(x),log2(y),'Type','Spearman');
     
 end
 
@@ -133,8 +134,7 @@ figure('Name', 'WT')
     p=plot([nan_wt nan_wt], y1,'-');
     hold on ; 
     p1=plot(y1,[nan_wt nan_wt],'-');
-    grey=[0.8 0.8 0.8];
-    set ([p p1], 'Color', grey);
+    set ([p p1], 'Color', color);
     colorbar
     set(gca, 'CLim', [0, 200])
 
@@ -145,15 +145,14 @@ figure('Name', 'mut')
     p=plot([nan_mut nan_mut], y1,'-');
     hold on ; 
     p1=plot(y1,[nan_mut nan_mut],'-');
-    grey=[0.8 0.8 0.8];
-    set ([p p1], 'Color', grey) ;
+    set ([p p1], 'Color', color) ;
     colorbar
     set(gca, 'CLim', [0, 200])
 
 % load WhiteRedBlack colormap:
 map3=load('WhiteRedBlack');
 % set colormap in figure 1 and 2
-set(1:2,'Colormap',map3.WhiteRedBlack)
+set(2:3,'Colormap',map3.WhiteRedBlack)
 
 %% 2. Zscore calculation and filtering of singletons
 
@@ -209,8 +208,7 @@ switch ZEROS
             p=plot([nan_wt nan_wt], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_wt nan_wt],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;
+            set ([p p1], 'Color', color) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut with zeros')
@@ -220,8 +218,7 @@ switch ZEROS
             p=plot([nan_mut nan_mut], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_mut nan_mut],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;
+            set ([p p1], 'Color', color) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
     
@@ -249,8 +246,7 @@ switch ZEROS
             p=plot([nan_wt nan_wt], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_wt nan_wt],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;           
+            set ([p p1], 'Color', color) ;           
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut without zeros')
@@ -260,8 +256,7 @@ switch ZEROS
             p=plot([nan_mut nan_mut], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_mut nan_mut],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;
+            set ([p p1], 'Color', color) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
 end
@@ -362,8 +357,7 @@ switch ZEROS
             p=plot([nan_wt_filtered nan_wt_filtered], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_wt_filtered nan_wt_filtered],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;  
+            set ([p p1], 'Color', color) ;  
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut with zeros after filters')
@@ -373,8 +367,7 @@ switch ZEROS
             p=plot([nan_mut_filtered nan_mut_filtered], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_mut_filtered nan_mut_filtered],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;
+            set ([p p1], 'Color', color) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
     
@@ -401,8 +394,7 @@ switch ZEROS
             p=plot([nan_wt_filtered nan_wt_filtered], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_wt_filtered nan_wt_filtered],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;     
+            set ([p p1], 'Color', color) ;     
             colorbar
             set(gca, 'CLim', [-3, 3])
         figure('Name','Zscore Mut without zeros after filters')
@@ -412,8 +404,7 @@ switch ZEROS
             p=plot([nan_mut_filtered nan_mut_filtered], y1,'-');
             hold on ; 
             p1=plot(y1,[nan_mut_filtered nan_mut_filtered],'-');
-            grey=[0.8 0.8 0.8];
-            set ([p p1], 'Color', grey) ;
+            set ([p p1], 'Color', color) ;
             colorbar
             set(gca, 'CLim', [-3, 3])
 end
@@ -447,14 +438,10 @@ figure('Name','Zscore difference (Mut - WT)')
     p=plot([nan_wt_mut_filter nan_wt_mut_filter], y1,'-');
     hold on ; 
     p1=plot(y1,[nan_wt_mut_filter nan_wt_mut_filter],'-');
-    grey=[0.8 0.8 0.8];
-    set ([p p1], 'Color', grey) ;     
+    set ([p p1], 'Color', color) ;     
     colorbar
     set(gca, 'CLim', [-2, 2])
-% load WhiteBlueRed colormap:
-map3=load('BlueWhiteRed.mat');
-% set colormap in figure 1 and 2
-set(5,'Colormap',map3.BlueWhiteRed)
+
 
 % % filter singletons in Zscore map as in Hnisz et al but based on histogram of nonzero Zscore diffs:
 % Zscore_diff(Zscore_diff>10)
@@ -472,7 +459,10 @@ set(5,'Colormap',map3.BlueWhiteRed)
 figure('Name', 'log2 Ratio of filtered mut/WT maps')
     imagesc(log2(mut_data_filtered./wt_data_filtered))
     colorbar
-set([3 4 6 7 8 9],'Colormap',map3.BlueWhiteRed)
+    % load WhiteBlueRed colormap:
+map3=load('BlueWhiteRed.mat');
+% set colormap in figure 4 -> 10
+set([ 4 5 6 7 8 9 10],'Colormap',map3.BlueWhiteRed)
 set(gca, 'CLim', [-2, 2])
 
 %% interactive linking to Genome Browser
