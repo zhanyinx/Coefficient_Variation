@@ -11,7 +11,7 @@ close all
 
 
 %% options:
-distance = 2; % distance for correlation between neighbors
+distance = 5; % distance for correlation between neighbors
 binsize = 5000; % genomic size of the bin
 startcoord = 99011149; % start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
 ZEROS = 'true'; % if 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
@@ -465,6 +465,10 @@ map3=load('BlueWhiteRed.mat');
 set([ 4 5 6 7 8 9 10],'Colormap',map3.BlueWhiteRed)
 set(gca, 'CLim', [-2, 2])
 
+
+%% virtual 4C profiling
+
+
 %% interactive linking to Genome Browser
 % enter a 'pause' state that can be quit with control+c
 while 1
@@ -480,6 +484,11 @@ while 1
     coordy = gencoord(y);
  
     %ucsc_str = ['chr10:',num2str(us_bin_coord),'-',num2str(ds_bin_coord)]
-    ucsc_str = ['https://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chrX%3A',num2str(coordx),'-',num2str(coordy),'&hgsid=390798063_VxbwBzrDXaAtOM7WArKjA4whs0Rs', '-browser'];
+    if strcmp(mut_info(3),'Inversion')
+        inv_start = table{strcmp(mut_sample, 'chromStart'), :};
+        inv_end = table{strcmp(mut_sample, 'chromEnd'), :};
+    else
+    ucsc_str = ['https://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chrX%3A',num2str(coordx),'-',num2str(coordy),'&hgsid=390798063_VxbwBzrDXaAtOM7WArKjA4whs0Rs', '-browser'];    
+    end
     web(ucsc_str, '-browser')
 end
