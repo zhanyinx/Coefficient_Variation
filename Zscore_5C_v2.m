@@ -11,16 +11,19 @@ close all
 
 
 %% options:
-distance = 5; % distance for correlation between neighbors
+distance = 5; % distance for correlation between neighbors and for variance analysis
 binsize = 5000; % genomic size of the bin
 startcoord = 99011149; % start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
 ZEROS = 'true'; % if 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
 tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples
 color=[0.8 0.8 0.8]; %color for NaNs [0.8 0.8 0.8]=grey
+viewpoint=99011150; %viewpoint for virtual 4C profile
+Inversion = 'true'; % Attention! IT IS VALID FOR ALL MAPS! true if you want the genome browser to display the correct (inverted) genomic region when you click on the maps
 %% 1. data input
 % samples:
 wt_sample = 'B20_E14-2';
-mut_sample = 'B29_51.13';
+%mut_sample = 'B29_51.13';
+mut_sample = 'B27_RGE3';
 disp(['** Hello Rafael, I am processing samples ', wt_sample, ' and ', mut_sample, ' **'])
 
 % look up if the mutant is a deletion or inversion and find deletion coordinates
@@ -62,8 +65,8 @@ end
 %     convert to matrix format and cut the matrices to ensure that they have the same size
 %     using Zhan's 'conver.sh' Bash script
 disp('Converting pairwise format into square matrix...')
-unix(['./convert.sh ', wt_filename])
-unix(['./convert.sh ', mut_filename])
+unix(['./convert.sh ', wt_filename]);
+unix(['./convert.sh ', mut_filename]);
 
 % import WT 5C square matrix
 wt = importdata([wt_filename, '.matrix'], ' ');
@@ -103,6 +106,7 @@ disp('Assigning masked bins to Nan')
 
 %% Correlation of neighborhoods
 % build a matrix of distances for WT sample
+disp('Doing correlation analysis of counts at different distances')
 for i=1:size(wt_data,1)
     for j=1:size(wt_data,1)
         dist_wt(i,j) = i-j;
@@ -122,9 +126,42 @@ for i=1:(size(wt_data,1)-distance-10)
     correlation(i,2)=corr(log2(x),log2(y),'Type','Spearman');
     
 end
-
+figure('Name',['Correlation between bead |i-j|=fixed and bead |i-j|+' num2str(distance)])
 plot(correlation(:,1),correlation(:,2))
+xlabel('|i-j|')
+ylabel('Correlation value (spearman)')
 
+
+%% neighborhood Coefficient of variation (CV)
+disp('Doing coefficient of variation analysis discard noisy 5C interaction')
+normalised_wt=wt_data-wt_data;
+n2=normalised_wt;
+for i=1:(size(wt_data,1))
+    for j=1:(size(wt_data,1))
+        conta=0;
+        for h=-distance:distance
+            for k=-distance:distance
+                if(i+h>0 & j+k>0 & i+h<=(size(wt_data,1)) & j+k<=(size(wt_data,1)))
+                    if(~(isnan(wt_data(i+h,j+k))))
+                        conta=conta+1;
+                        normalised_wt(i,j)=normalised_wt(i,j)+wt_data(i+h,j+k);
+                        n2(i,j)=n2(i,j)+wt_data(i+h,j+k)*wt_data(i+h,j+k);
+                    end
+                end
+            end
+        end
+        normalised_wt(i,j)=normalised_wt(i,j)/conta;
+        n2(i,j)=sqrt(n2(i,j)/conta-normalised_wt(i,j)*normalised_wt(i,j))/normalised_wt(i,j);
+    end
+end
+figure('Name', 'variance/mean')
+    imagesc(n2)
+    set(gca, 'CLim', [0, 2])
+    colorbar
+figure('Name','Histogram of CV')    
+    hist(log2(n2(:)),100)
+    xlabel('log2(CV)')
+    
 %% plot WT and mutant matrices 
 figure('Name', 'WT')
     imagesc(wt_data)
@@ -152,7 +189,7 @@ figure('Name', 'mut')
 % load WhiteRedBlack colormap:
 map3=load('WhiteRedBlack');
 % set colormap in figure 1 and 2
-set(2:3,'Colormap',map3.WhiteRedBlack)
+set(4:5,'Colormap',map3.WhiteRedBlack)
 
 %% 2. Zscore calculation and filtering of singletons
 
@@ -462,13 +499,29 @@ figure('Name', 'log2 Ratio of filtered mut/WT maps')
     % load WhiteBlueRed colormap:
 map3=load('BlueWhiteRed.mat');
 % set colormap in figure 4 -> 10
-set([ 4 5 6 7 8 9 10],'Colormap',map3.BlueWhiteRed)
+set([ 6 7 8 9 10 11 12],'Colormap',map3.BlueWhiteRed)
 set(gca, 'CLim', [-2, 2])
 
 
 %% virtual 4C profiling
-
-
+disp('Extracting virtual 4C profile')
+disp(['viewpoint coordinate: ' num2str(viewpoint)])
+viewpoint = int64((viewpoint-startcoord)/binsize)+1;
+virtual_4C_wt(:,1)=([1:size(wt_data,1)]-1)*binsize+startcoord;
+virtual_4C_mut(:,1)=([1:size(mut_data,1)]-1)*binsize+startcoord;
+virtual_4C_wt(:,2)=wt_data(:,viewpoint);
+virtual_4C_mut(:,2)=mut_data(:,viewpoint);
+if (sum(isnan(virtual_4C_mut(:,2)))==size(mut_data,1) | sum(isnan(virtual_4C_wt(:,2)))==size(wt_data,1))
+display('CANNOT EXTRACT 4C PROFILE BECAUSE EITHER MUTANT OR WT IS NAN')
+else
+    figure('Name','virtual_4C')
+        plot(virtual_4C_wt(:,1),virtual_4C_wt(:,2))
+        hold on
+        plot(virtual_4C_mut(:,1),virtual_4C_mut(:,2))
+        legend('Wt','Mut')
+        xlabel('Genomic Coordinate')
+        ylabel('virtual 4C counts')
+end
 %% interactive linking to Genome Browser
 % enter a 'pause' state that can be quit with control+c
 while 1
@@ -484,9 +537,22 @@ while 1
     coordy = gencoord(y);
  
     %ucsc_str = ['chr10:',num2str(us_bin_coord),'-',num2str(ds_bin_coord)]
-    if strcmp(mut_info(3),'Inversion')
-        inv_start = table{strcmp(mut_sample, 'chromStart'), :};
-        inv_end = table{strcmp(mut_sample, 'chromEnd'), :};
+    if (strcmp(mut_info(3),'Inversion') & strcmp(Inversion,'true'))
+        disp('ATTENTION! It modifies the genomic region according to the inversion!')
+        disp('If you want to display the wt maps with wt coordinate, set Inversion=false')
+        inv_start = str2double(mut_info(7));
+        inv_end = str2double(mut_info(8));
+        if(coordx>inv_start & coordx<inv_end)
+           coordx=inv_end-(coordx-inv_start); 
+        end
+        if(coordy>inv_start & coordy<inv_end)
+           coordy=inv_end-(coordy-inv_start); 
+        end
+        if(coordy>coordx)
+            ucsc_str = ['https://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chrX%3A',num2str(coordx),'-',num2str(coordy),'&hgsid=390798063_VxbwBzrDXaAtOM7WArKjA4whs0Rs', '-browser'];
+        else
+            ucsc_str = ['https://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chrX%3A',num2str(coordy),'-',num2str(coordx),'&hgsid=390798063_VxbwBzrDXaAtOM7WArKjA4whs0Rs', '-browser'];
+        end
     else
     ucsc_str = ['https://genome.ucsc.edu/cgi-bin/hgTracks?db=mm9&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chrX%3A',num2str(coordx),'-',num2str(coordy),'&hgsid=390798063_VxbwBzrDXaAtOM7WArKjA4whs0Rs', '-browser'];    
     end
