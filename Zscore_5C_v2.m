@@ -133,7 +133,7 @@ ylabel('Correlation value (spearman)')
 
 
 %% neighborhood Coefficient of variation (CV)
-disp('Doing coefficient of variation analysis discard noisy 5C interaction')
+disp('Doing coefficient of variation analysis to discard noisy 5C interactions')
 normalised_wt=wt_data-wt_data;
 n2=normalised_wt;
 for i=1:(size(wt_data,1))
