@@ -271,14 +271,14 @@ switch ZEROS
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range(1)-0.01,Zscore_range(2)])
+            set(gca, 'CLim', [Zscore_range(1)-1,Zscore_range(2)])
         figure('Name','Zscore Mut with zeros')
             appo=Zscore_mut;
             appo(appo<Zscore_range(1))=Zscore_range(1);
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range(1)-0.01,Zscore_range(2)])
+            set(gca, 'CLim', [Zscore_range(1)-1,Zscore_range(2)])
     
         
     case 'false' % excluding zeros
@@ -305,14 +305,14 @@ switch ZEROS
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range(1)-0.01,Zscore_range(2)])
+            set(gca, 'CLim', [Zscore_range(1)-1,Zscore_range(2)])
         figure('Name','Zscore Mut without zeros')
             appo=Zscore_mut;
             appo(appo<Zscore_range(1))=Zscore_range(1);
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range(1)-0.01,Zscore_range(2)])
+            set(gca, 'CLim', [Zscore_range(1)-1,Zscore_range(2)])
 end
 
 
@@ -410,14 +410,14 @@ switch ZEROS
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range_filtered(1)-0.01,Zscore_range_filtered(2)])
+            set(gca, 'CLim', [Zscore_range_filtered(1)-1,Zscore_range_filtered(2)])
         figure('Name','Zscore Mut with zeros after filters')
             appo=Zscore_mut;
             appo(appo<Zscore_range_filtered(1))=Zscore_range_filtered(1);
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range_filtered(1)-0.01,Zscore_range_filtered(2)])
+            set(gca, 'CLim', [Zscore_range_filtered(1)-1,Zscore_range_filtered(2)])
     
         
     case 'false' % excluding zeros
@@ -443,14 +443,14 @@ switch ZEROS
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range_filtered(1)-0.01,Zscore_range_filtered(2)])
+            set(gca, 'CLim', [Zscore_range_filtered(1)-1,Zscore_range_filtered(2)])
         figure('Name','Zscore Mut without zeros after filters')
             appo=Zscore_mut;
             appo(appo<Zscore_range_filtered(1))=Zscore_range_filtered(1);
             appo(isnan(appo))=-55;
             imagesc(appo)
             colorbar
-            set(gca, 'CLim', [Zscore_range_filtered(1)-0.01,Zscore_range_filtered(2)])
+            set(gca, 'CLim', [Zscore_range_filtered(1)-1,Zscore_range_filtered(2)])
 end
 
 
@@ -509,7 +509,7 @@ figure('Name', 'log2 Ratio of filtered mut/WT maps')
     % load WhiteBlueRed colormap:
 map3=load('BlueWhiteRed.mat');
 % set colormap in figure 4 -> 10
-set([ 8 9 11 12 13 14],'Colormap',map3.BlueWhiteRed)
+set([ 8 9 10 11 12 13 14],'Colormap',map3.BlueWhiteRed)
 
 
 %% virtual 4C profiling
