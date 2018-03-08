@@ -1,21 +1,24 @@
 #!/bin/bash
 
-bin=5000
+bin=6000
 s=99000000
 e=103350000
-awk 'BEGIN{getline;getline; min=9999999999999;max=-99; bin=0.+"'"$bin"'"; s=0.+"'"$s"'"; e=0.+"'"$e"'"}{
+#running average
+rv=0
+awk 'BEGIN{getline;getline; min=9999999999999;max=-99; bin=0.+"'"$bin"'"; s=0.+"'"$s"'"; e=0.+"'"$e"'";rv="'"$rv"'"/2.}{
 	split($1,a,"-"); 
 	split(a[1],b,":");
-	start=b[2]
+	start=b[2]+rv
 
         split($2,c,"-"); 
         split(c[1],d,":");
-        end=d[2]
+        end=d[2]+rv
 
 	matrix[start,end]=$3
 	bool[start,end]++
 	if(start>max) max=start
 	if(start<min) min=start
+	print start, end > "aaa"
 		
 }END{
 	for(i=min;i<=max;i+=bin) if(i>s && i<e) printf "%s ", "chrX:"i
