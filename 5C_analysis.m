@@ -15,7 +15,7 @@ distance = 5; % distance for correlation between neighbors and for variance anal
 binsize = 6000; % genomic size of the bin
 startcoord = 99005149; % start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
 ZEROS = 'true'; % if 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
-tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples
+tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples, format like the example provided
 color=[0.8 0.8 0.8]; %color for NaNs [0.8 0.8 0.8]=grey
 viewpoint=99021000; %viewpoint for virtual 4C profile
 Inversion = 'false'; % Attention! IT IS VALID FOR ALL MAPS! true if you want the genome browser to display the correct (inverted) genomic region when you click on the maps
@@ -32,14 +32,6 @@ mut_sample = 'LinxCBS-inv_pooled';
 % file names of WT and mutant sample (these are Nicolas' pirwise matrices, wither raw or ICEd):
 wt_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/01_WT/E14-WT_pooled_binned.mat';
 mut_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/03_Inversions/LinxCBS-inv_pooled_inversion_binned.mat';
-%wt_filename = [wt_sample, '_binned.mat'];
-%mut_filename = [mut_sample, '_binned.mat'];
-%mut_filename = [mut_sample, '_inversion_binned.mat'];
-%mut_filename = [mut_sample, '_deletion_binned_rescaled.mat'];
-%wt_filename = [wt_sample, '_bwt2_rf_binned6kb_30_5.mat'];
-%mut_filename = [mut_sample, '_bwt2_rf_binned6kb_30_5.mat'];
-%wt_filename = [wt_sample, '_binned6kb_30_5.mat'];
-%mut_filename = [mut_sample, '_binned6kb_30_5.mat'];
 
 
 %% 1. data input
