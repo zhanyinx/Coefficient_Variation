@@ -25,11 +25,11 @@ Zscore_range_filtered = [-3,3]; % range of plot for Zscore maps after filters
 top = 2; % percentage of top changing interaction from log2fc
 saturation = 200; %max value in the heatmap plots
 
-% samples:
+% samples (the names in the excel sheet):
 wt_sample = 'E14-WT_pooled';
 mut_sample = 'LinxCBS-inv_pooled';
 
-% file names of WT and mutant sample (these are Nicolas' pirwise matrices, wither raw or ICEd):
+% file names of WT and mutant sample (in the format as B20_E14-2_bwt2_rf_binned6kb_30_5.mat):
 wt_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/01_WT/E14-WT_pooled_binned.mat';
 mut_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/03_Inversions/LinxCBS-inv_pooled_inversion_binned.mat';
 
@@ -79,7 +79,7 @@ end
 
 %% Pairwise matrix conversion to square matrix format, cutting to uniform region
 %     convert to matrix format and cut the matrices to ensure that they have the same size
-%     using Zhan's 'conver.sh' Bash script
+%     Remember to adapt the parameters in convert.sh
 disp('Converting pairwise format into square matrix...')
 unix(['./convert.sh ', wt_filename]);
 unix(['./convert.sh ', mut_filename]);

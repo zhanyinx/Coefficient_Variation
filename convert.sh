@@ -1,10 +1,16 @@
 #!/bin/bash
 
+##parameters
+
 bin=6000
 s=99000000
 e=103350000
 #running average
 rv=0
+
+#end parameters
+
+
 awk 'BEGIN{getline;getline; min=9999999999999;max=-99; bin=0.+"'"$bin"'"; s=0.+"'"$s"'"; e=0.+"'"$e"'";rv="'"$rv"'"/2.}{
 	split($1,a,"-"); 
 	split(a[1],b,":");
