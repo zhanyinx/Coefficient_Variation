@@ -11,14 +11,20 @@ close all
 
 %% Options:
 % Set parameters
-distance = 5; % Distance for correlation between neighbors and for variance analysis
-binsize = 6000; % Genomic size of the bin
-startcoord = 99005149; % Start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
-ZEROS = 'true'; % If 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
-tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples, format like the example provided
-color=[0.8 0.8 0.8]; % Color for NaNs [0.8 0.8 0.8]=grey
-viewpoint=99021000; % Viewpoint for virtual 4C profile
-Inversion = 'false'; % Attention! IT IS VALID FOR ALL MAPS! true if you want the genome browser to display the correct (inverted) genomic region when you click on the maps
+distance = 5; % Distance (in bins) for correlation between neighbors and for variance analysis.
+binsize = 6000; % Genomic size (in bp) of each bin in the Hi-C matrix.
+startcoord = 99005149; % Start coordinate (in bp) of the first bin in the square matrix (after cutting with convert.sh, see below).
+ZEROS = 'true'; % If 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded.
+color=[0.8 0.8 0.8]; % Color for NaNs in the heatmap plots. It should be a 1x3 array with values between 0 and 1.
+viewpoint=99021000; % Viewpoint (in bp) for the virtual 4C profile.
+Inversion = 'false'; % If set to 'true', the genome browser will display the correct (inverted) genomic region when you click on the maps.
+mut_is_deletion = 'false' % If set to 'true', the script will consider a deletion mutation and require specification of deletion_start, deletion_end, and deletion_size.
+deletion_start = 0; % Start coordinate (in bp) of the deletion mutation.
+deletion_end = 0; % End coordinate (in bp) of the deletion mutation.
+deletion_size = 0; % Size (in bp) of the deletion mutation.
+mut_is_inversion = 'false' %If set to 'true', the script will consider an inversion mutation and require specification of inv_start and inv_end.
+inv_start = 0; % Start coordinate (in bp) of the inversion mutation.
+inv_end = 0; %  (in bp) of the inversion mutation.
 Zscore_range = [-2,2]; % Range of plot for Zscore maps
 log_ratio_range = [-3,3]; % Range of plot for log ratio maps
 Zscore_range_filtered = [-3,3]; % Range of plot for Zscore maps after filters
@@ -30,29 +36,15 @@ wt_sample = 'E14-WT_pooled';
 mut_sample = 'LinxCBS-inv_pooled';
 
 % Define file names of WT and mutant samples (in the format as B20_E14-2_bwt2_rf_binned6kb_30_5.mat)
-wt_filename = 'B20_E14-2_bwt2_rf_binned6kb_30_5.mat';
-mut_filename = 'B20_E14-2_bwt2_rf_binned6kb_30_5.mat';
+wt_filename = 'example.mat';
+mut_filename = 'example.mat';
 
 
 %% 1. data input
 disp(['** Hello Rafael, I am processing samples ', wt_sample, ' and ', mut_sample, ' **'])
 
-% look up if the mutant is a deletion or inversion and find deletion coordinates
-table=readtable(tablename); % imports the database table with all 5C samples
-disp(['Importing sample information from table ', tablename])
-
-
-
-names = table.Sample; % this is the sample names
-mut_info = table{strcmp(mut_sample, names), :}; % finds sample in the table and extracts the corresp. row with info
-if strcmp(mut_info(3),'Deletion')
-     disp(['The sample ', mut_sample, ' was detected as a Deletion'])
-     % determine position and size of the deletion (useful for calculating distance matrix below and obtain correct Zscore!)
-     deletion_start = str2double(mut_info(7));
-     deletion_end = str2double(mut_info(8));
-     deletion_size = deletion_start-deletion_end;
-     disp(['Deletion start Chrx:', num2str(deletion_start)])
-     disp(['Deletion end Chrx:', num2str(deletion_end)])
+if strcmp(mut_is_deletion,'true')
+     disp(['The sample ', mut_sample, ' has been set to harbor a deletion'])
 
      % determine start and end bin of the deletion, excluding both start and end bins:
      deletion_start_bin = fix((deletion_start -startcoord) / binsize +1);
@@ -63,21 +55,13 @@ if strcmp(mut_info(3),'Deletion')
 
 end
 
-if strcmp('raw', wt_filename)
-    disp('Working on raw data')
-elseif strcmp('ice', wt_filename)
-    disp('Working on raw data')
-else
-    disp('Attention! Not specified if raw or ice data')
-end
-
 
 %% Pairwise matrix conversion to square matrix format, cutting to uniform region
 %     convert to matrix format and cut the matrices to ensure that they have the same size
 %     Remember to adapt the parameters in convert.sh
 disp('Converting pairwise format into square matrix...')
-unix(['./convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", wt_filename]);
-unix(['./convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", binsize]);
+unix(['./bin/convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", wt_filename]);
+unix(['./bin/convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", binsize]);
 
 % import WT 5C square matrix
 wt = importdata([wt_filename, '.matrix'], ' ');
@@ -271,7 +255,7 @@ for i=1:size(wt_data,1)
 end
 % modify parts affected by deletion in the mutant, if the sample is a deletion:
 dist_mut = dist_wt;
-if strcmp(mut_info(3),'Deletion')
+if strcmp(mut_is_deletion,'true')
     disp('Correcting distance matrix for the presence of a deletion...')
     % correct distance matrix for the presence of a deletion
     for i = 1:deletion_start_bin-1
@@ -565,7 +549,7 @@ figure('Name', 'log2 Ratio of filtered mut/WT maps')
        
 
     % load WhiteBlueRed colormap:
-map3=load('BlueWhiteRed.mat');
+map3=load('colormaps/BlueWhiteRed.mat');
 % set colormap in figure 4 -> 10
 set([ 10 11 13 14 15 16 17 18],'Colormap',map3.BlueWhiteRed)
 %set([ 3 4],'Colormap',map3.BlueWhiteRed)
@@ -578,7 +562,7 @@ set([ 10 11 13 14 15 16 17 18],'Colormap',map3.BlueWhiteRed)
 
 
 %% top percentage of maximum gain or loss in interaction
-map3=load('BlueWhiteRed.mat');
+map3=load('colormaps/BlueWhiteRed.mat');
 figure('Name', 'log2 Ratio top INCREASE in interaction (GREEN)')
     ratio=log2((mut_data_filtered./dist_mut)./(wt_data_filtered./dist_wt));
     ratio(isinf(ratio))=NaN;
@@ -639,11 +623,10 @@ while 1
     coordy = gencoord(y);
  
     %ucsc_str = ['chr10:',num2str(us_bin_coord),'-',num2str(ds_bin_coord)]
-    if (strcmp(mut_info(3),'Inversion') & strcmp(Inversion,'true'))
+    if (strcmp(mut_is_inversion,'true'))
         disp('ATTENTION! It modifies the genomic region according to the inversion!')
         disp('If you want to display the wt maps with wt coordinate, set Inversion=false')
-        inv_start = str2double(mut_info(7));
-        inv_end = str2double(mut_info(8));
+        
         if(coordx>inv_start & coordx<inv_end)
            coordx=inv_end-(coordx-inv_start); 
         end
