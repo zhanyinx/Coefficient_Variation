@@ -1,9 +1,30 @@
-# Coefficient_Variation
+[![GitHub code licence is MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)]
 
-At the moment only 1 type of format is supported by the current version of the scripts.
-The main script is 5C_analysis.m.
-This script needs an excel sheet with the information regarding the samples in the same format as 20160822_5C-Samples.xlsx
+# Matlab source code to calculate Coefficient of Variation given HiTC Hi-C matrix
 
-5C_analysis.m also needs 5C interaction matrix in the format as in B20_E14-2_bwt2_rf_binned6kb_30_5.mat
+## Contents
+- [Contents](#contents)
+- [Overview](#overview)
+- [Installation](#installation)
+- [Usage](#usage)
 
-Finally, you have to adjust the parameters in 5C_analysis.m and convert.sh
+## Overview
+
+Hi-C and 5C data are noisy, especially long range interactions. To filter these data, we implemented a new method based on coefficient of variation to flag noisy interactions
+
+## Installation
+
+```bash
+git clone git@github.com:zhanyinx/Coefficient_Variation.git
+```
+
+## Usage
+
+Modify the parameters in the main script coefficient_variation.m according to your dataset.
+Create an excel table:
+Sample	WT/Mut	Type of Mut	Size	'Name'	chrom	chromStart	chromEnd
+
+| Sample   | WT/Mut | Type of Mut | Size | 'Name' | chrom	| chromStart | chromEnd  |
+| -------  | ------ | ----------- | ---- | ------ | ----- | ---------- | --------  |
+| B20_18C6 | Mut    | Inversion   | 70kb | 70kb.  | chrX  | 100625999  | 100701714 |
+| .......  | ...... | ........... | .... | ...... | ..... | .......... | ........  |
