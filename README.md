@@ -7,10 +7,11 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Citation] (#citation)
 
 ## Overview
 
-Hi-C and 5C data are noisy, especially long range interactions. To filter these data, we implemented a new method based on coefficient of variation to flag noisy interactions
+Hi-C and 5C data are noisy, especially long range interactions. To filter these data, we implemented a new method based on coefficient of variation to flag noisy interactions. 
 
 ## Installation
 
@@ -21,3 +22,9 @@ git clone git@github.com:zhanyinx/Coefficient_Variation.git
 ## Usage
 
 Modify the parameters in the main script coefficient_variation.m according to your dataset.
+
+## Citation
+
+If you are using coefficient of variation, please consider citing this
+
+https://www.nature.com/articles/s41588-019-0412-0
