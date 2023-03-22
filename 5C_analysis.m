@@ -3,35 +3,35 @@ clc
 close all
 
 %% version 1 flowchart:
-% 1. open maps
-% 2. calculate Zscore
-% 3. filter out extreme Zscore singletons
-% 4. go back to the maps and filter out rows and columns >1.5 IQR
-% 5. re-calculate Zscores and compare them
+% 1. Open maps
+% 2. Calculate Zscore
+% 3. Filter out extreme Zscore singletons
+% 4. Go back to the maps and filter out rows and columns >1.5 IQR
+% 5. Recalculate Zscores and compare them
 
-
-%% options:
-distance = 5; % distance for correlation between neighbors and for variance analysis
-binsize = 6000; % genomic size of the bin
-startcoord = 99005149; % start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
-ZEROS = 'true'; % if 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
+%% Options:
+% Set parameters
+distance = 5; % Distance for correlation between neighbors and for variance analysis
+binsize = 6000; % Genomic size of the bin
+startcoord = 99005149; % Start coordinate of the first bin in the square matrix (after cutting with convert.sh, see below)
+ZEROS = 'true'; % If 'true', Zscores are calculated keeping 0s in the data; otherwise if 'false' they are discarded
 tablename = '20160822_5C-Samples.xlsx'; % Xls file with information on samples, format like the example provided
-color=[0.8 0.8 0.8]; %color for NaNs [0.8 0.8 0.8]=grey
-viewpoint=99021000; %viewpoint for virtual 4C profile
+color=[0.8 0.8 0.8]; % Color for NaNs [0.8 0.8 0.8]=grey
+viewpoint=99021000; % Viewpoint for virtual 4C profile
 Inversion = 'false'; % Attention! IT IS VALID FOR ALL MAPS! true if you want the genome browser to display the correct (inverted) genomic region when you click on the maps
-Zscore_range = [-2,2]; % range of plot for Zscore maps
-log_ratio_range = [-3,3]; % range of plot for log ratio maps
-Zscore_range_filtered = [-3,3]; % range of plot for Zscore maps after filters
-top = 2; % percentage of top changing interaction from log2fc
-saturation = 200; %max value in the heatmap plots
+Zscore_range = [-2,2]; % Range of plot for Zscore maps
+log_ratio_range = [-3,3]; % Range of plot for log ratio maps
+Zscore_range_filtered = [-3,3]; % Range of plot for Zscore maps after filters
+top = 2; % Percentage of top changing interaction from log2fc
+saturation = 200; % Max value in the heatmap plots
 
-% samples (the names in the excel sheet):
+% Define samples
 wt_sample = 'E14-WT_pooled';
 mut_sample = 'LinxCBS-inv_pooled';
 
-% file names of WT and mutant sample (in the format as B20_E14-2_bwt2_rf_binned6kb_30_5.mat):
-wt_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/01_WT/E14-WT_pooled_binned.mat';
-mut_filename = '../FINAL-5C-MAPS_April2017/04_Pooled_maps/03_Inversions/LinxCBS-inv_pooled_inversion_binned.mat';
+% Define file names of WT and mutant samples (in the format as B20_E14-2_bwt2_rf_binned6kb_30_5.mat)
+wt_filename = 'B20_E14-2_bwt2_rf_binned6kb_30_5.mat';
+mut_filename = 'B20_E14-2_bwt2_rf_binned6kb_30_5.mat';
 
 
 %% 1. data input
@@ -40,12 +40,7 @@ disp(['** Hello Rafael, I am processing samples ', wt_sample, ' and ', mut_sampl
 % look up if the mutant is a deletion or inversion and find deletion coordinates
 table=readtable(tablename); % imports the database table with all 5C samples
 disp(['Importing sample information from table ', tablename])
-%table(:,'Var11') = []; % get rid of 11th column (useless)
 
-%needed for luca?s version of matlab:
-%table(:,'Var10') = []; % get rid of 10th column (useless)
-%table(:,'Var9') = []; % get rid of 9th column (useless)
-%end of what is needed for luca?s version of matlab
 
 
 names = table.Sample; % this is the sample names
@@ -81,8 +76,8 @@ end
 %     convert to matrix format and cut the matrices to ensure that they have the same size
 %     Remember to adapt the parameters in convert.sh
 disp('Converting pairwise format into square matrix...')
-unix(['./convert.sh ', wt_filename]);
-unix(['./convert.sh ', mut_filename]);
+unix(['./convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", wt_filename]);
+unix(['./convert.sh -b ', int2str(binsize), " -s ", int2str(startcoord), " -e ", int2str(endcoord), " -i ", binsize]);
 
 % import WT 5C square matrix
 wt = importdata([wt_filename, '.matrix'], ' ');
